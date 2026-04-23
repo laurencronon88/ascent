@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perkins Daily Specials</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Lobster&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root {
+    --green:  #384E46;
+    --cream:  #EDECE6;
+    --yellow: #E69025;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; height: 100vh;
+    font-family: 'Roboto Condensed', sans-serif;
+    background: #E8E4DA; color: #1F2A24;
+    display: grid; grid-template-columns: 340px 1fr;
+  }
+
+  /* EDITOR */
+  .editor { background: #fff; padding: 24px; overflow-y: auto; border-right: 1px solid #D4CEC1; }
+  .editor h1 {
+    font-size: 16px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    margin: 0 0 4px; color: var(--green);
+  }
+  .editor .sub { font-size: 12px; color: #6B6A63; margin-bottom: 20px; }
+  .toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 18px; }
+  .toggle button {
+    padding: 9px; border: 1px solid #D4CEC1; background: #fff;
+    font: inherit; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em;
+    cursor: pointer; border-radius: 3px;
+  }
+  .toggle button.on { background: var(--green); color: var(--cream); border-color: var(--green); }
+  label { display: block; font-size: 12px; font-weight: 500; margin: 12px 0 4px; }
+  input, textarea {
+    width: 100%; padding: 8px 10px;
+    border: 1px solid #D4CEC1; border-radius: 3px;
+    font: inherit; font-size: 13px;
+  }
+  input:focus, textarea:focus { outline: none; border-color: var(--green); }
+  textarea { resize: vertical; min-height: 48px; }
+  .special { background: #FAF8F3; padding: 10px; border-radius: 3px; border: 1px solid #E8E3D4; margin-bottom: 8px; }
+  .special-head { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; text-transform: uppercase; color: #839566; }
+  .special-head button { border: none; background: none; cursor: pointer; color: #6B6A63; font-size: 14px; }
+  .add { width: 100%; padding: 8px; border: 1px dashed #D4CEC1; background: transparent; color: #6B6A63; border-radius: 3px; font: inherit; font-size: 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.04em; }
+  .add:hover { color: var(--green); border-color: var(--green); }
+  .add:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* PREVIEW */
+  .preview { display: flex; flex-direction: column; overflow: hidden; }
+  .bar {
+    background: #fff; padding: 14px 24px; border-bottom: 1px solid #D4CEC1;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; color: #6B6A63;
+  }
+  .bar .actions { display: flex; gap: 8px; }
+  .btn {
+    padding: 8px 14px; border-radius: 3px; border: 1px solid #D4CEC1;
+    background: #fff; font: inherit; font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer;
+  }
+  .btn.primary { background: var(--green); color: var(--cream); border-color: var(--green); }
+  .stage {
+    flex: 1; overflow: auto;
+    display: flex; justify-content: center; align-items: flex-start;
+    padding: 40px 20px;
+  }
+
+  /* THE CARD — 4.5" × 8" (432 × 768px) */
+  .card {
+    width: 432px; height: 768px;
+    background: var(--cream); color: var(--green);
+    position: relative; overflow: hidden;
+    box-shadow: 0 20px 40px -15px rgba(0,0,0,0.2);
+    display: flex; flex-direction: column;
+    contain: size;
+  }
+  /* Perkins brand bars top & bottom */
+  .card::before, .card::after {
+    content: ''; position: absolute; left: 0; right: 0; height: 14px;
+    background:
+      linear-gradient(to bottom,
+        var(--green) 0, var(--green) 9px,
+        transparent 9px, transparent 11px,
+        var(--yellow) 11px, var(--yellow) 14px);
+  }
+  .card::before { top: 0; }
+  .card::after { bottom: 0;
+    background:
+      linear-gradient(to bottom,
+        var(--yellow) 0, var(--yellow) 3px,
+        transparent 3px, transparent 5px,
+        var(--green) 5px, var(--green) 14px);
+  }
+
+  .inner {
+    padding: 38px 30px 32px;
+    display: flex; flex-direction: column; height: 100%;
+    text-align: center;
+    min-height: 0;
+  }
+
+  /* Perkins logo — Lobster stand-in with swoosh + Restaurant & Bakery lockup */
+  .logo-wrap { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+  .logo {
+    font-family: 'Lobster', cursive;
+    font-size: 48px; line-height: 1;
+    color: var(--green);
+    position: relative;
+    display: inline-block;
+  }
+  .logo sup { font-family: 'Roboto Condensed'; font-size: 11px; font-weight: 400; }
+  .logo-swoosh {
+    display: block;
+    width: 190px; height: 14px;
+    margin: -4px auto 0;
+    color: var(--green);
+  }
+  .logo-sub {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--green);
+    margin-top: 3px;
+    text-transform: uppercase;
+  }
+
+  .title {
+    font-weight: 700;
+    font-size: 34px; line-height: 1;
+    text-transform: uppercase;
+    margin: 28px 0 4px;
+  }
+  .title .script {
+    font-family: 'Lobster', cursive;
+    font-weight: 400; text-transform: none;
+    color: var(--yellow);
+  }
+  .date {
+    font-size: 12px; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--green); opacity: 0.7;
+    margin-bottom: 18px;
+  }
+
+  /* Body */
+  .body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+  /* Hero */
+  .hero-name {
+    font-weight: 700;
+    font-size: 30px; line-height: 1.05;
+    text-transform: uppercase;
+    margin: 0 0 10px;
+  }
+  .hero-desc {
+    font-size: 14px; line-height: 1.4;
+    padding: 0 14px;
+    margin: 0 0 18px;
+  }
+  .price-burst {
+    position: relative;
+    width: 200px; height: 200px;
+    margin: 4px auto 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .price-burst svg { position: absolute; inset: 0; width: 100%; height: 100%; color: var(--green); }
+  .price-burst span {
+    position: relative; z-index: 1;
+    font-weight: 700; font-size: 42px;
+    color: var(--cream);
+    padding: 0 8px;
+  }
+
+  /* Multi */
+  .multi { display: flex; flex-direction: column; gap: 9px; text-align: left; padding: 0 4px; }
+  .item { display: grid; grid-template-columns: 1fr auto; gap: 1px 10px; align-items: baseline; }
+  .item .n { font-weight: 700; font-size: 14px; text-transform: uppercase; margin: 0; letter-spacing: 0.005em; }
+  .item .p { font-weight: 700; font-size: 15px; color: var(--yellow); white-space: nowrap; }
+  .item .d { grid-column: 1/-1; font-size: 10.5px; line-height: 1.3; margin: 0; }
+  .item + .item { border-top: 1px dashed rgba(56,78,70,0.3); padding-top: 9px; }
+
+  /* Footer */
+  .foot {
+    margin-top: auto;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding-top: 14px;
+  }
+
+  [data-empty="true"] { display: none !important; }
+
+  /* Print */
+  @page { size: 4.5in 8in; margin: 0; }
+  @media print {
+    body { background: #fff; display: block; }
+    .editor, .bar, .stage { display: none !important; }
+    .printable { display: block !important; }
+    .printable .card { width: 4.5in; height: 8in; box-shadow: none; }
+  }
+  .printable { display: none; }
+</style>
+</head>
+<body>
+
+<aside class="editor">
+  <h1>Perkins Daily Specials</h1>
+  <div class="sub">4.5" × 8" vertical insert</div>
+
+  <div class="toggle">
+    <button id="tHero" class="on" onclick="setLayout('hero')">Hero</button>
+    <button id="tMulti" onclick="setLayout('multi')">Multiple</button>
+  </div>
+
+  <label>Headline</label>
+  <input id="f-title" value="Today's" maxlength="20" />
+
+  <label>Accent word (script)</label>
+  <input id="f-script" value="specials" maxlength="16" />
+
+  <label>Date</label>
+  <input id="f-date" value="Thursday, April 23" maxlength="32" />
+
+  <div id="heroFields">
+    <label>Dish name</label>
+    <input id="f-name" value="Country Fried Steak" maxlength="40" />
+    <label>Description</label>
+    <textarea id="f-desc" maxlength="160">Hand-breaded and smothered in sausage gravy. Served with mashed potatoes &amp; green beans.</textarea>
+    <label>Price</label>
+    <input id="f-price" value="$12.99" maxlength="10" />
+  </div>
+
+  <div id="multiFields" style="display:none">
+    <div id="multiList"></div>
+    <button class="add" id="addBtn" onclick="addSpecial()">+ Add (max 7)</button>
+  </div>
+
+  <label>Location</label>
+  <input id="f-loc" value="Cedar Park · 512.555.0143" maxlength="60" />
+</aside>
+
+<main class="preview">
+  <div class="bar">
+    <div>Live preview · prints at 4.5 × 8 in</div>
+    <div class="actions">
+      <button class="btn" onclick="downloadPNG()">PNG</button>
+      <button class="btn primary" onclick="window.print()">Print / PDF</button>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="card" id="card">
+      <div class="inner">
+        <div class="logo-wrap">
+          <span class="logo">Perkins<sup>®</sup></span>
+          <svg class="logo-swoosh" viewBox="0 0 220 16" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M 4 8 C 45 2, 145 2, 200 5 L 216 11 C 155 8, 65 11, 6 15 Z" fill="currentColor"/>
+          </svg>
+          <div class="logo-sub">Restaurant &amp; Bakery</div>
+        </div>
+
+        <h2 class="title">
+          <span id="p-title">Today's</span>
+          <span class="script" id="p-script">specials</span>
+        </h2>
+        <div class="date" id="p-date">Thursday, April 23</div>
+
+        <div class="body">
+          <div id="heroView">
+            <h3 class="hero-name" id="p-name">Country Fried Steak</h3>
+            <p class="hero-desc" id="p-desc"></p>
+            <div class="price-burst">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <polygon fill="currentColor" points="50,4 59,17 73,10 74,26 90,27 83,41 96,50 83,59 90,73 74,74 73,90 59,83 50,96 41,83 27,90 26,74 10,73 17,59 4,50 17,41 10,27 26,26 27,10 41,17"/>
+              </svg>
+              <span id="p-price">$12.99</span>
+            </div>
+          </div>
+
+          <div class="multi" id="multiView" style="display:none"></div>
+        </div>
+
+        <div class="foot" id="p-loc">Cedar Park</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="printable" id="printable"></div>
+
+<script>
+  const state = {
+    layout: 'hero',
+    specials: [
+      { name: 'Meatloaf Monday', price: '$8.99',
+        desc: 'Homemade meatloaf on garlic mashed potatoes, topped with beef gravy and crispy onions. Comes with choice of one side.' },
+      { name: 'Tremendous Tuesday', price: '$10.09',
+        desc: 'Our Tremendous Twelve breakfast: three eggs, four pieces of Applewood smoked bacon or sausage links, choice of potatoes, and four buttermilk pancakes.' },
+      { name: 'Senior Day (Wed)', price: '10% off',
+        desc: 'Customers 55+ receive 10% off their total bill with any regular-priced item. Excludes Breakfast Specials, Early Birds, 55+ meals, Great American Trios, and Magnificent Seven.' },
+      { name: 'Thank Melt It\u2019s Thursday', price: '$11.49',
+        desc: 'Our Patty Melt — USDA Angus beef patty with sauteed onions and Cheddar cheese on grilled rye. Served with seasoned French fries.' },
+      { name: 'Chop It Like It\u2019s Hot Friday', price: '$13.99',
+        desc: 'Grilled Pork Chop Dinner. Two grilled pork chops, Cajun or garlic-seasoned, or teriyaki glazed. Served with two dinner sides.' },
+      { name: 'Hash It Out Saturday', price: '$13.99',
+        desc: 'Corned Beef Hash grilled and served with two eggs, choice of hash browns or breakfast potatoes, and a choice of three buttermilk pancakes, Mammoth muffin, or buttered toast.' },
+      { name: 'Beefed Up Sunday', price: '$10.99',
+        desc: 'Creamed Chipped Beef over your choice of toast. Served with a choice of potatoes.' }
+    ]
+  };
+
+  const bind = [
+    ['f-title','p-title'], ['f-script','p-script'], ['f-date','p-date'],
+    ['f-name','p-name'], ['f-desc','p-desc'], ['f-price','p-price'],
+    ['f-loc','p-loc']
+  ];
+  bind.forEach(([s,d]) => {
+    const i = document.getElementById(s), o = document.getElementById(d);
+    const u = () => { const v = i.value.trim(); o.textContent = v; o.setAttribute('data-empty', v===''); };
+    i.addEventListener('input', u); u();
+  });
+
+  function setLayout(m) {
+    state.layout = m;
+    tHero.classList.toggle('on', m==='hero');
+    tMulti.classList.toggle('on', m==='multi');
+    heroFields.style.display = m==='hero' ? '' : 'none';
+    multiFields.style.display = m==='multi' ? '' : 'none';
+    heroView.style.display = m==='hero' ? '' : 'none';
+    multiView.style.display = m==='multi' ? '' : 'none';
+    if (m==='multi') renderMulti();
+  }
+
+  function renderMulti() {
+    const list = document.getElementById('multiList');
+    list.innerHTML = '';
+    state.specials.forEach((s, i) => {
+      const b = document.createElement('div');
+      b.className = 'special';
+      b.innerHTML = `
+        <div class="special-head">
+          <span>Special ${i+1}</span>
+          ${state.specials.length>1 ? `<button onclick="removeSpecial(${i})">✕</button>` : ''}
+        </div>
+        <label>Name</label><input data-i="${i}" data-k="name" value="${esc(s.name)}" maxlength="40"/>
+        <label>Description</label><textarea data-i="${i}" data-k="desc" maxlength="120">${esc(s.desc)}</textarea>
+        <label>Price</label><input data-i="${i}" data-k="price" value="${esc(s.price)}" maxlength="10"/>`;
+      list.appendChild(b);
+    });
+    list.querySelectorAll('input,textarea').forEach(el => {
+      el.addEventListener('input', () => {
+        state.specials[+el.dataset.i][el.dataset.k] = el.value;
+        drawMulti();
+      });
+    });
+    addBtn.disabled = state.specials.length >= 7;
+    drawMulti();
+  }
+
+  function drawMulti() {
+    multiView.innerHTML = state.specials.map(s => `
+      <div class="item">
+        <h4 class="n">${esc(s.name)}</h4>
+        <div class="p">${esc(s.price)}</div>
+        ${s.desc.trim() ? `<p class="d">${esc(s.desc)}</p>` : ''}
+      </div>`).join('');
+  }
+
+  function addSpecial() { if (state.specials.length<7) { state.specials.push({name:'New special',desc:'',price:'$0'}); renderMulti(); } }
+  function removeSpecial(i) { state.specials.splice(i,1); renderMulti(); }
+  function esc(s) { return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  async function downloadPNG() {
+    const canvas = await html2canvas(card, { scale: 3, backgroundColor: null, logging: false });
+    const link = document.createElement('a');
+    link.download = `perkins-specials-${new Date().toISOString().slice(0,10)}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }
+
+  window.addEventListener('beforeprint', () => {
+    printable.innerHTML = '';
+    printable.appendChild(card.cloneNode(true));
+  });
+  window.addEventListener('afterprint', () => { printable.innerHTML = ''; });
+</script>
+</body>
+</html>
