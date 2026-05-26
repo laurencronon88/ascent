@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -768,11 +769,10 @@
   </div>
 
   <label>What to show</label>
-  <div class="toggle four">
+  <div class="toggle three">
     <button id="tHero" class="on" onclick="setLayout('hero')">Featured</button>
     <button id="tMulti" onclick="setLayout('multi')">Weekly</button>
     <button id="tDrinks" onclick="setLayout('drinks')">Drink list</button>
-    <button id="tDrinksPhoto" onclick="setLayout('drinksPhoto')">Drink photos</button>
   </div>
 
   <label>Headline</label>
@@ -1206,14 +1206,11 @@
     tHero.classList.toggle('on',         m==='hero');
     tMulti.classList.toggle('on',        m==='multi');
     tDrinks.classList.toggle('on',       m==='drinks');
-    tDrinksPhoto.classList.toggle('on',  m==='drinksPhoto');
     heroFields.style.display        = m==='hero'        ? '' : 'none';
     multiFields.style.display       = m==='multi'       ? '' : 'none';
     drinksFields.style.display      = m==='drinks'      ? '' : 'none';
-    drinksPhotoFields.style.display = m==='drinksPhoto' ? '' : 'none';
     heroView.style.display        = m==='hero'        ? '' : 'none';
     multiView.style.display       = m==='multi'       ? '' : 'none';
-    drinksPhotoView.style.display = m==='drinksPhoto' ? '' : 'none';
     // drinksView visibility + menu-mode class depend on the drink-style sub-toggle
     if (m === 'drinks') {
       drinksView.style.display = state.drinkStyle === 'simple' ? '' : 'none';
