@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -156,7 +155,8 @@
   /* Light variant keeps the bottom brand bars (combine with right-edge bars for L-shape).
      Dark variant hides both since it uses a full outline border instead. */
   .card.menu-mode .brand-bars-top { display: none; }
-  .card[data-drinkstyle="dark"] .brand-bars-bottom { display: none; }
+  /* Menu modes use their own bar treatments — hide the main-design bottom trio */
+  .card.menu-mode .brand-bars-bottom { display: none; }
   .card.menu-mode .menu-inner { display: block; }
 
   /* Light variant keeps cream bg; Dark repaints to green */
@@ -197,22 +197,17 @@
   .card[data-drinkstyle="dark"] .menu-head-svg .sunburst-rays,
   .card[data-drinkstyle="dark"] .menu-head-svg .head-tag-rule  { display: block; }
 
-  /* ===== LIGHT VARIANT: right-edge vertical brand bars =====
-     Matches the bottom-bar thickness so the two together form an L wrap.
-     Same color stops as brand-bars-bottom but rotated 90°. */
+  /* ===== LIGHT VARIANT: full-card L-shaped brand bars =====
+     Wraps the bottom and right edges with three nested L's that share rounded
+     inner corners. Path geometry comes directly from the official Perkins
+     Brand Bars (Menu) Illustrator file — viewBox 612×792 stretched to card. */
   .menu-edge-bars {
     position: absolute;
-    top: 0; right: 0;
-    width: var(--bar-bot-h); height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     z-index: 2;
     pointer-events: none;
     display: none;
-    background: linear-gradient(to right,
-      #E48E25 0%,      #E48E25 27.6%,
-      transparent 27.6%, transparent 36.22%,
-      #7D9461 36.22%, #7D9461 63.82%,
-      transparent 63.82%, transparent 72.39%,
-      #394E46 72.39%, #394E46 100%);
   }
   .card[data-drinkstyle="light"] .menu-edge-bars { display: block; }
   .card[data-drinkstyle="dark"]  .menu-edge-bars { display: none; }
@@ -247,10 +242,14 @@
      Tight bottom margin so 8+ items in the right column don't get clipped. */
   .menu-body {
     position: absolute;
-    top: calc(310px * var(--scale));
+    /* Headline SVG renders at card-width × (340/612) tall; visible "drinks"
+       descenders reach ~y=320 in viewBox → ~52% of card width. Start the body
+       just below that so the columns sit cleanly under "just for you". */
+    top: calc(var(--card-w) * 0.56);
     left: calc(70px * var(--scale));
     right: calc(70px * var(--scale));
-    bottom: calc(140px * var(--scale));
+    /* Bottom clears the menu-foot (logo height + 60px bottom offset + ~15px gap) */
+    bottom: calc(130px * var(--scale));
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0 calc(40px * var(--scale));
@@ -325,12 +324,19 @@
     max-width: 95%;
   }
 
-  /* Menu footer — Perkins logo */
+  /* Menu footer — Perkins logo
+     Wrapper has a fixed box. SVG fills it via width:100% height:100% and uses
+     preserveAspectRatio="xMinYMin slice" (set via JS) so the wordmark spans the
+     full wrapper width with top-left alignment, and the R&B subtitle is sliced
+     off the bottom by the wrapper's overflow:hidden. */
   .menu-foot {
     position: absolute;
-    bottom: calc(40px * var(--scale));
+    bottom: calc(60px * var(--scale));
     left: calc(70px * var(--scale));
     z-index: 3;
+    width: calc(125px * var(--scale));
+    height: calc(52px * var(--scale));
+    overflow: hidden;
   }
   /* Dark variant: logo at bottom center, white */
   .card[data-drinkstyle="dark"] .menu-foot {
@@ -338,9 +344,8 @@
     transform: translateX(-50%);
   }
   .menu-foot .logo-img {
-    /* Cropped viewBox (1728x720) has aspect 2.4:1 — the wordmark only, no subtitle */
-    width: calc(150px * var(--scale));
-    height: calc(63px * var(--scale));
+    width: 100%;
+    height: 100%;
     display: block;
   }
   /* Default: show the green lockup, hide the white lockup */
@@ -482,8 +487,8 @@
   .card {
     /* Defaults to letter — overridden via data-size attribute */
     --card-w: 816px; --card-h: 1056px; --scale: 1.4;
-    --bar-top-h: calc(var(--card-w) * 50 / 612);
-    --bar-bot-h: calc(var(--card-w) * 27 / 612);
+    --bar-top-h: calc(var(--card-w) * 27 / 612);
+    --bar-bot-h: calc(var(--card-w) * 50 / 612);
     width: var(--card-w); height: var(--card-h);
     background: var(--cream); color: var(--green);
     position: relative; overflow: hidden;
@@ -507,21 +512,21 @@
     top: 0;
     height: var(--bar-top-h);
     background: linear-gradient(to bottom,
-      #394E46 0%,      #394E46 30.33%,
-      transparent 30.33%, transparent 34.84%,
-      #7D9461 34.84%, #7D9461 65.16%,
-      transparent 65.16%, transparent 69.67%,
-      #E48E25 69.67%, #E48E25 100%);
+      #394E46 0%,      #394E46 27.6%,
+      transparent 27.6%, transparent 36.22%,
+      #7D9461 36.22%, #7D9461 63.82%,
+      transparent 63.82%, transparent 72.39%,
+      #E48E25 72.39%, #E48E25 100%);
   }
   .brand-bars-bottom {
     top: calc(100% - var(--bar-bot-h));
     height: var(--bar-bot-h);
     background: linear-gradient(to bottom,
-      #E48E25 0%,      #E48E25 27.6%,
-      transparent 27.6%, transparent 36.22%,
-      #7D9461 36.22%, #7D9461 63.82%,
-      transparent 63.82%, transparent 72.39%,
-      #394E46 72.39%, #394E46 100%);
+      #E48E25 0%,      #E48E25 30.33%,
+      transparent 30.33%, transparent 34.84%,
+      #7D9461 34.84%, #7D9461 65.16%,
+      transparent 65.16%, transparent 69.67%,
+      #394E46 69.67%, #394E46 100%);
   }
 
   .inner {
@@ -627,7 +632,7 @@
     grid-template-columns: 1fr auto;
     gap: 1px calc(10px * var(--scale));
     align-items: baseline;
-    padding: calc(7px * var(--scale)) 0;
+    padding: calc(4px * var(--scale)) 0;
     min-height: 0;
   }
   .item:first-child { padding-top: 0; }
@@ -635,12 +640,12 @@
   .item + .item { border-top: 1px dashed rgba(56,78,70,0.3); }
   .item .cat {
     display: block;
-    font-size: calc(8.5px * var(--scale));
+    font-size: calc(7.5px * var(--scale));
     font-weight: 700;
-    letter-spacing: 0.2em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--yellow);
-    margin-bottom: calc(2px * var(--scale));
+    margin-bottom: calc(1px * var(--scale));
     line-height: 1;
   }
   .item .n {
@@ -674,9 +679,9 @@
     text-wrap: pretty;
     hyphens: auto;
     -webkit-hyphens: auto;
-    /* Clamp to 2 lines — never overflow the card */
+    /* Clamp to 1 line — keeps long drink lists from overflowing the card */
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
@@ -795,10 +800,9 @@
 
   <div id="drinksFields" style="display:none">
     <label>Style</label>
-    <div class="toggle three">
+    <div class="toggle">
       <button id="dsSimple" class="on" onclick="setDrinkStyle('simple')">Simple list</button>
       <button id="dsLight"  onclick="setDrinkStyle('light')">Menu — Light</button>
-      <button id="dsDark"   onclick="setDrinkStyle('dark')">Menu — Dark</button>
     </div>
 
     <div id="drinksList"></div>
@@ -874,17 +878,17 @@
 </svg>
     <div class="card-frame" id="cardFrame">
     <div class="card" id="card" data-size="letter">
-      <!-- Brand bars (top) — from official Perkins Brand Bars asset -->
-      <svg class="brand-bars brand-bars-top" viewBox="0 0 612 50.15" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <rect fill="#394e46" x="-10" y="0"     width="632" height="15.21"/>
-        <rect fill="#7d9461" x="-10" y="17.47" width="632" height="15.21"/>
-        <rect fill="#e48e25" x="-10" y="34.94" width="632" height="15.21"/>
-      </svg>
-      <!-- Brand bars (bottom) -->
-      <svg class="brand-bars brand-bars-bottom" viewBox="0 0 612 26.48" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <rect fill="#e48e25" x="-10" y="0"     width="632" height="7.31"/>
+      <!-- Brand bars (top) — flipped to thinner trio at top -->
+      <svg class="brand-bars brand-bars-top" viewBox="0 0 612 26.48" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect fill="#394e46" x="-10" y="0"     width="632" height="7.31"/>
         <rect fill="#7d9461" x="-10" y="9.59"  width="632" height="7.31"/>
-        <rect fill="#394e46" x="-10" y="19.17" width="632" height="7.31"/>
+        <rect fill="#e48e25" x="-10" y="19.17" width="632" height="7.31"/>
+      </svg>
+      <!-- Brand bars (bottom) — flipped to thicker trio at bottom -->
+      <svg class="brand-bars brand-bars-bottom" viewBox="0 0 612 50.15" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect fill="#e48e25" x="-10" y="0"     width="632" height="15.21"/>
+        <rect fill="#7d9461" x="-10" y="17.47" width="632" height="15.21"/>
+        <rect fill="#394e46" x="-10" y="34.94" width="632" height="15.21"/>
       </svg>
 
       <!-- Drink Menu layout (alternate "Menu" style inside Drink list mode) -->
@@ -896,11 +900,12 @@
         <!-- Dark variant: vertical column divider -->
         <div class="menu-divider"></div>
 
-        <!-- Light variant: right-edge L-shaped brand bars (vertical strips on right) -->
-        <svg class="menu-edge-bars" viewBox="0 0 36 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect x="0"  y="-20" width="10" height="820" fill="#384D46"/>
-          <rect x="13" y="-20" width="10" height="820" fill="#7D9461"/>
-          <rect x="26" y="-20" width="10" height="820" fill="#E58E25"/>
+        <!-- Light variant: L-shape brand bars wrapping bottom + right edges
+             (official Perkins Brand Bars - Menu) -->
+        <svg class="menu-edge-bars" viewBox="0 0 612 792" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path fill="#394e46" d="M-389.98,775.17v6.12s984.85,0,984.85,0c3.43,0,6.21-3.2,6.21-7.14V0s-12.71,0-12.71,0v769.22c0,3.29-2.32,5.96-5.18,5.96H-389.98Z"/>
+          <path fill="#7d9461" d="M-389.98,767.14v6.12s970.25,0,970.25,0c3.43,0,6.21-3.2,6.21-7.14V0s-12.71,0-12.71,0v761.18c0,3.29-2.32,5.96-5.18,5.96H-389.98Z"/>
+          <path fill="#e48e25" d="M-389.98,759.11v6.12s955.65,0,955.65,0c3.43,0,6.21-3.2,6.21-7.14V0s-12.71,0-12.71,0v753.15c0,3.29-2.32,5.96-5.18,5.96H-389.98Z"/>
         </svg>
 
         <!-- Headline cluster — coordinates and transforms match the source Illustrator file -->
@@ -1275,7 +1280,6 @@
     state.drinkStyle = s;
     dsSimple.classList.toggle('on', s==='simple');
     dsLight.classList.toggle('on',  s==='light');
-    dsDark.classList.toggle('on',   s==='dark');
     // Toggle which sub-view is visible inside the Drink list mode
     if (state.layout === 'drinks') {
       drinksView.style.display = s==='simple' ? '' : 'none';
@@ -1493,17 +1497,67 @@
   }
 
   // ---------- PNG EXPORT ----------
+  // Inject the document's @font-face CSS into every SVG inside `card` so the
+  // SVG <text> elements (headline cursive "drinks", "SPECIALTY", etc.) keep
+  // their proper Lobster / Roboto Condensed faces when html2canvas rasterizes.
+  // Without this, html2canvas often falls back to system fonts for SVG text.
+  function getFontFaceCss() {
+    const robotoFont = document.getElementById('robotoFont');
+    const lobsterFont = document.getElementById('lobsterFont');
+    return (robotoFont ? robotoFont.textContent : '') +
+           (lobsterFont ? lobsterFont.textContent : '');
+  }
+  function injectFontsIntoSvgs(root) {
+    const css = getFontFaceCss();
+    if (!css) return [];
+    const injected = [];
+    root.querySelectorAll('svg').forEach(svg => {
+      let defs = svg.querySelector(':scope > defs');
+      const created = !defs;
+      if (created) {
+        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        svg.insertBefore(defs, svg.firstChild);
+      }
+      const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+      style.setAttribute('data-injected-fonts', 'true');
+      style.textContent = css;
+      defs.appendChild(style);
+      injected.push({ style, defs, created });
+    });
+    return injected;
+  }
+  function removeInjectedFonts(injected) {
+    injected.forEach(({ style, defs, created }) => {
+      style.remove();
+      if (created && !defs.childNodes.length) defs.remove();
+    });
+  }
+
   async function downloadPNG() {
+    // Make sure all @font-face fonts are fully loaded before rasterizing.
+    if (document.fonts && document.fonts.ready) {
+      try { await document.fonts.ready; } catch (e) {}
+    }
     const { w, h } = PAGE_SIZES[pageSize];
     const prevTransform = card.style.transform;
     card.style.transform = 'none';
+    const injected = injectFontsIntoSvgs(card);
     try {
-      const canvas = await html2canvas(card, { scale: 3, backgroundColor: null, logging: false, width: w, height: h });
+      const canvas = await html2canvas(card, {
+        scale: 3,
+        backgroundColor: null,
+        logging: false,
+        width: w,
+        height: h,
+        useCORS: true,
+        allowTaint: true,
+      });
       const link = document.createElement('a');
       link.download = `perkins-specials-${pageSize}-${new Date().toISOString().slice(0,10)}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
     } finally {
+      removeInjectedFonts(injected);
       card.style.transform = prevTransform;
     }
   }
@@ -1517,6 +1571,10 @@
     const [iw, ih] = inches.split(' ');
     clone.style.width = iw;
     clone.style.height = ih;
+    // Embed @font-face inside every SVG in the print clone so SVG <text>
+    // elements (Lobster "drinks", Roboto Condensed "SPECIALTY") use the right
+    // typefaces in PDF / print output, not the browser's fallback fonts.
+    injectFontsIntoSvgs(clone);
     printable.appendChild(clone);
   });
   window.addEventListener('afterprint', () => { printable.innerHTML = ''; });
@@ -1524,9 +1582,12 @@
   // ---------- MENU FOOTER LOGO ----------
   // Clone both Perkins lockups (green + white) into the menu footer; CSS swaps
   // between them based on the dark/light drinkstyle.
-  // Crop the viewBox so only the script wordmark renders (the menu design uses
-  // just the "Perkins" mark, not the full "Restaurant & Bakery" lockup).
-  const WORDMARK_VIEWBOX = '0 0 1728 720'; // full lockup is 1728x936; trim the R&B subtitle
+  // The full lockup is 1728x936 with "Restaurant & Bakery" subtitle below the
+  // wordmark. We want only the wordmark, so we set viewBox to 1728x720 AND
+  // use preserveAspectRatio="xMinYMin slice" so the wordmark fills the
+  // wrapper's width, top-left aligned, with any subtitle remnants clipped by
+  // the wrapper's overflow:hidden.
+  const WORDMARK_VIEWBOX = '0 0 1728 720';
   (function setupMenuFootLogo(){
     const foot = document.getElementById('menuFoot');
     if (!foot) return;
@@ -1537,6 +1598,7 @@
       g.removeAttribute('id');
       g.classList.add('logo-img', 'logo-green');
       g.setAttribute('viewBox', WORDMARK_VIEWBOX);
+      g.setAttribute('preserveAspectRatio', 'xMinYMin slice');
       foot.appendChild(g);
     }
     if (white) {
@@ -1545,6 +1607,7 @@
       w.removeAttribute('style'); // remove the display:none from the original
       w.classList.add('logo-img', 'logo-white');
       w.setAttribute('viewBox', WORDMARK_VIEWBOX);
+      w.setAttribute('preserveAspectRatio', 'xMinYMin slice');
       foot.appendChild(w);
     }
   })();
