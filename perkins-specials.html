@@ -326,17 +326,19 @@
   }
 
   /* Menu footer — Perkins logo
-     Wrapper has a fixed box. SVG fills it via width:100% height:100% and uses
-     preserveAspectRatio="xMinYMin slice" (set via JS) so the wordmark spans the
-     full wrapper width with top-left alignment, and the R&B subtitle is sliced
-     off the bottom by the wrapper's overflow:hidden. */
+     Approach: render the SVG at its NATURAL aspect (1728:936), then clip the
+     bottom portion (which contains the "Restaurant & Bakery" subtitle) with
+     the wrapper's overflow:hidden. This guarantees the full wordmark is
+     visible horizontally — no preserveAspectRatio guesswork.
+     Wrapper width × (720/1728) = visible wordmark height. */
   .menu-foot {
     position: absolute;
     bottom: calc(60px * var(--scale));
     left: calc(70px * var(--scale));
     z-index: 3;
-    width: calc(125px * var(--scale));
-    height: calc(52px * var(--scale));
+    width: calc(135px * var(--scale));
+    /* 135 wide × (720/1728) ≈ 56.25 = visible wordmark height after clip */
+    height: calc(56px * var(--scale));
     overflow: hidden;
   }
   /* Dark variant: logo at bottom center, white */
@@ -345,8 +347,11 @@
     transform: translateX(-50%);
   }
   .menu-foot .logo-img {
+    /* SVG renders at full width with proportional height from its viewBox
+       (1728:936 → 135 × ~73). The wrapper's 56-tall box then clips off the
+       bottom ~17 (= the "Restaurant & Bakery" subtitle area). */
     width: 100%;
-    height: 100%;
+    height: auto;
     display: block;
   }
   /* Default: show the green lockup, hide the white lockup */
@@ -1579,12 +1584,11 @@
   // ---------- MENU FOOTER LOGO ----------
   // Clone both Perkins lockups (green + white) into the menu footer; CSS swaps
   // between them based on the dark/light drinkstyle.
-  // The full lockup is 1728x936 with "Restaurant & Bakery" subtitle below the
-  // wordmark. We want only the wordmark, so we set viewBox to 1728x720 AND
-  // use preserveAspectRatio="xMinYMin slice" so the wordmark fills the
-  // wrapper's width, top-left aligned, with any subtitle remnants clipped by
-  // the wrapper's overflow:hidden.
-  const WORDMARK_VIEWBOX = '0 0 1728 720';
+  // The source SVGs keep their natural 1728:936 viewBox so the wordmark
+  // renders at its real proportions and isn't clipped. The wrapper
+  // (.menu-foot) is shorter than the SVG's natural render height and its
+  // overflow:hidden lops off the "Restaurant & Bakery" subtitle from the
+  // bottom while keeping the full "Perkins" wordmark visible.
   (function setupMenuFootLogo(){
     const foot = document.getElementById('menuFoot');
     if (!foot) return;
@@ -1594,8 +1598,6 @@
       const g = green.cloneNode(true);
       g.removeAttribute('id');
       g.classList.add('logo-img', 'logo-green');
-      g.setAttribute('viewBox', WORDMARK_VIEWBOX);
-      g.setAttribute('preserveAspectRatio', 'xMinYMin slice');
       foot.appendChild(g);
     }
     if (white) {
@@ -1603,8 +1605,6 @@
       w.removeAttribute('id');
       w.removeAttribute('style'); // remove the display:none from the original
       w.classList.add('logo-img', 'logo-white');
-      w.setAttribute('viewBox', WORDMARK_VIEWBOX);
-      w.setAttribute('preserveAspectRatio', 'xMinYMin slice');
       foot.appendChild(w);
     }
   })();
